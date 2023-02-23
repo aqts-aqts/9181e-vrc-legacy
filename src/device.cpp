@@ -60,10 +60,6 @@ namespace global {
 
         return motorVelocity; 
     }
-
-    double countDisks() {
-
-    }
     
     void updateDisplay() {
         pros::lcd::print(0, "X: %f", odometry::robot.x);
