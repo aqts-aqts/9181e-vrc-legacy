@@ -1,8 +1,8 @@
 #pragma once
 #include "main.h"
 
-#define centerToXTracking 5.55 // distance from tracking center to tracking wheel
-#define centerToYTracking 0 // distance from tracking center to middle of left wheels
+#define centerToXTracking 5.54753 // distance from tracking center to tracking wheel
+#define centerToYTracking 0.17076 // distance from tracking center to middle of left wheels
 #define wheelDiameter 3.25 // diameter of the side wheels
 #define trackingDiameter 2.75 // diameter of tracking wheel
 
@@ -29,6 +29,7 @@ namespace odometry {
     extern void init_odometry();
     extern void updateSensors();
     extern void updatePosition();
+    extern void positionTrack(void* param);
     extern void set_approach_constants(double p, double d, double i, double c, double psi, double csi);
     extern void set_approach_exit_conditions(double small_err, double small_time, double big_err, double big_time, double velocity_err, double velocity_time, double mA_time);
     extern void approach_to_point(double x, double y, double maxSpeed, double maxturnSpeed);

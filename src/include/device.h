@@ -11,7 +11,8 @@
 
 #define indexerFeedSpeed 100
 #define intakeFeedSpeed 127
-#define minDiscWidth 5
+#define discWidth 25
+
 
 namespace global {
     extern pros::Motor FW1;
@@ -19,6 +20,7 @@ namespace global {
     extern pros::Motor intake;
     extern pros::Motor indexer;
 
+    extern pros::Distance counter;
     extern pros::Distance wall;
     extern pros::Optical colour;
     extern pros::Vision vision;
@@ -29,9 +31,14 @@ namespace global {
 
     extern void init();
     extern void updateDisplay();
-    extern double calculateFlywheelPower(double targetVelocity, double kP, double kI, double kD);
+    extern void countDiscs();
+    extern double calculateFlywheelPower();
+    extern void flywheelPID(void* param);
 
-    extern bool speeding;
     extern int elapsed;
-    // extern int discs;
+    extern int discs;
+
+    extern double targetVelocity;
+    extern double currentVelocity;
+    extern double lastTarget;
 }

@@ -68,8 +68,8 @@ namespace odometry {
         lastYTrack = curYTrack;
         lastAngle = robot.angle;
 
-        curXTrack = horizontalEncoder.get_position() * trackingDiameter * M_PI / 360;
-        curYTrack = verticalEncoder.get_position() * trackingDiameter * M_PI / 360; 
+        curXTrack = (horizontalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360;
+        curYTrack = (verticalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360; 
         robot.angle = chassis.imu.get_rotation() * M_PI / 180;
     }
 
@@ -88,6 +88,14 @@ namespace odometry {
 
         robot.x += cos(lastAngle) * deltaX + sin(lastAngle) * deltaY;
         robot.y += -sin(lastAngle) * deltaX + cos(lastAngle) * deltaY;
+    }
+
+    void positionTrack(void* param) {
+        while (true) {
+            updateSensors();
+            updatePosition();
+            pros::delay(10);
+        }
     }
 
     void set_approach_constants(double p, double d, double i, double c, double psi = INFINITY, double csi = INFINITY) {
@@ -203,7 +211,7 @@ namespace odometry {
 
             if (offset < c_start_i) chassis.set_tank(leftPower, rightPower);
             else chassis.set_tank(motorPower, motorPower);
-            pros::delay(ez::util::DELAY_TIME);
+            pros::delay(10);
         }
     }
 }

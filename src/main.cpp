@@ -1,18 +1,19 @@
 #include "main.h"
 #include "pros/misc.h"
+#include "pros/rtos.h"
 using namespace global;
 
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  {-8, -9}
+  {-17, -9}
 
   // Right Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
   ,{5, 3}
 
   // IMU Port
-  ,6
+  ,16
 
   // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
   //    (or tracking wheel diameter)
@@ -64,9 +65,9 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    Auton("Left side", programmingSkills),
-    Auton("Right side", programmingSkills),
-    Auton("Solo win point", programmingSkills)
+    Auton("Left side", left_side),
+    Auton("Right side", left_side),
+    Auton("Solo win point", left_side)
   });
 
   // Initialize chassis and auton selector
@@ -88,18 +89,20 @@ void autonomous() {
   chassis.reset_drive_sensor(); // Reset drive sensors to 0
   chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
 
+  pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
+  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+
   ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
 }
 
 void opcontrol() {
-  double velocity = 560; // velocity of flywheel
-  double lastVelocity = 560;
-  double currentVelocity = 0;
+  targetVelocity = 420; // current flywheel velocity
+  lastTarget = 420; // last flywheel velocity
 
   int prevFly = 0; // previous flywheel state change
   int prevPower = 0; // previous power change
-  // int prevDisc = -1000; // last disc seen
-  // double prevDist = indexer.get(); // previous distance to cup holder base
+
+  bool flywheel = true; // flywheel state
 
   // This is preference to what you like to drive on.
   chassis.set_drive_brake(MOTOR_BRAKE_BRAKE);
@@ -110,36 +113,31 @@ void opcontrol() {
 
   chassis.set_drive_current_limit(2500);
 
+  pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
+  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+
   while (true) {
     // chassis.tank(); // Tank control
     // chassis.arcade_standard(ez::SPLIT); // Standard split arcade
-    // chassis.arcade_standard(ez::SINGLE); // Standard single arcade
+    chassis.arcade_standard(ez::SINGLE); // Standard single arcade
     // chassis.arcade_flipped(ez::SPLIT); // Flipped split arcade
-    chassis.arcade_standard(ez::SINGLE); // Flipped single arcade
-
-    odometry::updateSensors();
-    odometry::updatePosition(); // update position tracking
-    updateDisplay(); // update brain display
-
-    currentVelocity += calculateFlywheelPower(velocity, 0.01, 0, 0);
-    FW1.move_velocity(currentVelocity * reverseFW1);
-    FW2.move_velocity(currentVelocity * reverseFW2);
+    // chassis.arcade_standard(ez::SINGLE); // Flipped single arcade
 
     // Flywheel
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && elapsed - prevFly > 500) {
-      velocity = (speeding) ? 200: lastVelocity;
-      speeding = !speeding;
+      targetVelocity = (flywheel) ? 200: lastTarget;
+      flywheel = !flywheel;
       prevFly = elapsed;
     }
 
     // Control flywheel power
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && elapsed - prevPower > 100) { // flyPower = 0.805;
-      velocity = 560;
-      lastVelocity = 560;
+      targetVelocity = 560;
+      lastTarget = 560;
       prevPower = elapsed;
     } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && elapsed - prevPower > 100) { // flyPower = 0.75;
-      velocity = 420;
-      lastVelocity = 420;
+      targetVelocity = 420;
+      lastTarget = 420;
       prevPower = elapsed;
     }
 
@@ -148,7 +146,7 @@ void opcontrol() {
 
     // Intake/indexer
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) { // intake
-      intake.move(intakeFeedSpeed * reverseIntake);
+      intake.move(intakeFeedSpeed * reverseIntake * ((discs > 3) ? -1: 1));
       indexer.move(indexerFeedSpeed * reverseIndexer);
     } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) { // feed
       indexer.move(-indexerFeedSpeed * reverseIndexer);
@@ -159,7 +157,7 @@ void opcontrol() {
 
     // Rollers
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
-      intake.move(-60 * reverseIntake); // Roll in
+      intake.move(127 * reverseIntake); // Roll in
     }
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) { // outtake
       intake.move(-127 * reverseIntake);
@@ -172,6 +170,8 @@ void opcontrol() {
 
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && elapsed > 70000) expansion.set_value(1);
     // leave a bit of time before endgame as O(1) actions take non-zero time
+
+    updateDisplay(); // update brain display
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
     elapsed += ez::util::DELAY_TIME; // increase elapsed time
