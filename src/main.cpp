@@ -1,6 +1,7 @@
 #include "main.h"
 #include "pros/misc.h"
 #include "pros/rtos.h"
+#include <set>
 using namespace global;
 
 Drive chassis (
@@ -65,9 +66,7 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    Auton("Left side", left_side),
-    Auton("Right side", left_side),
-    Auton("Solo win point", left_side)
+    Auton("Auto", programmingSkills)
   });
 
   // Initialize chassis and auton selector
@@ -91,10 +90,11 @@ void autonomous() {
 
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
   pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+  pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
 
+  startTime = pros::millis();
   ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
 }
-
 void opcontrol() {
   targetVelocity = 420; // current flywheel velocity
   lastTarget = 420; // last flywheel velocity
@@ -113,8 +113,11 @@ void opcontrol() {
 
   chassis.set_drive_current_limit(2500);
 
+  startTime = pros::millis();
+
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
   pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+  pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
 
   while (true) {
     // chassis.tank(); // Tank control
@@ -127,6 +130,7 @@ void opcontrol() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && elapsed - prevFly > 500) {
       targetVelocity = (flywheel) ? 200: lastTarget;
       flywheel = !flywheel;
+      crossed = false;
       prevFly = elapsed;
     }
 
@@ -134,10 +138,12 @@ void opcontrol() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && elapsed - prevPower > 100) { // flyPower = 0.805;
       targetVelocity = 560;
       lastTarget = 560;
+      crossed = false;
       prevPower = elapsed;
     } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && elapsed - prevPower > 100) { // flyPower = 0.75;
       targetVelocity = 420;
       lastTarget = 420;
+      crossed = false;
       prevPower = elapsed;
     }
 
@@ -171,9 +177,7 @@ void opcontrol() {
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && elapsed > 70000) expansion.set_value(1);
     // leave a bit of time before endgame as O(1) actions take non-zero time
 
-    updateDisplay(); // update brain display
-
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
-    elapsed += ez::util::DELAY_TIME; // increase elapsed time
+    elapsed += ez::util::DELAY_TIME;
   }
 }

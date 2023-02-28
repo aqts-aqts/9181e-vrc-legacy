@@ -30,7 +30,6 @@ namespace odometry {
     extern void updateSensors();
     extern void updatePosition();
     extern void positionTrack(void* param);
-    extern void set_approach_constants(double p, double d, double i, double c, double psi, double csi);
-    extern void set_approach_exit_conditions(double small_err, double small_time, double big_err, double big_time, double velocity_err, double velocity_time, double mA_time);
-    extern void approach_to_point(double x, double y, double maxSpeed, double maxturnSpeed);
+    extern void move_to_point(double x, double y, double driveSpeed, double turnSpeed);
+    extern void move_to_point_no_turn(double x, double y, double driveSpeed, double turnSpeed);
 }

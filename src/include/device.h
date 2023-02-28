@@ -28,17 +28,18 @@ namespace global {
     
     extern pros::Rotation horizontalEncoder;
     extern pros::Rotation verticalEncoder;
-
+    
     extern void init();
-    extern void updateDisplay();
-    extern void countDiscs();
-    extern double calculateFlywheelPower();
+    extern void countDiscs(void* param);
     extern void flywheelPID(void* param);
-
     extern int elapsed;
     extern int discs;
 
     extern double targetVelocity;
     extern double currentVelocity;
     extern double lastTarget;
+
+    extern bool crossed;
+
+    extern int startTime;
 }

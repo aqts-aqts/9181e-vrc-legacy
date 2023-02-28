@@ -1,3 +1,4 @@
+#include "EZ-Template/util.hpp"
 #include "main.h"
 #include "pros/misc.h"
 #include "pros/motors.h"
@@ -38,6 +39,12 @@ namespace global {
     double kP;
     double kI;
     double kD;
+    double speedkP;
+    
+    double p_constant;
+    bool crossed;
+
+    int startTime;
 
     void init() {
         elapsed = 0; // Time since opcontrol started
@@ -50,16 +57,23 @@ namespace global {
         derivative = 0;
         prevError = 0; 
 
+        // velocity constants kP = 0.005, kI = 0.000001, kD = 0.01
+
         // flywheel constants
-        kP = 0.005; // proportional = positive when speeding up, negative when slowing down 
-        kI = 0; // integral = gains when under target, loses when over target
-        
+        // increase when undershooting, decrease when overshooting
+        kP = 0.01; // proportional = positive when speeding up, negative when slowing down 
+        kI = 0.000001; // integral = gains when under target, loses when over target
         kD = 0.01; // derivative = negative when approaching target, positive when leaving target
+        speedkP = 0.005; // kP value used for speeding up
+
+        p_constant = speedkP; // constant used for proportional control
 
         // flywheel status
         currentVelocity = 0;
         targetVelocity = 0;
         lastTarget = 0;
+
+        crossed = false;
         
         FW1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
         FW2.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
@@ -73,19 +87,21 @@ namespace global {
         verticalEncoder.reset_position();
     }
 
-    void countDiscs() {
-        if (counter.get() - lastDist > discWidth) discs += 1;
-        lastDist = counter.get();
-    }
-
-    double calculateFlywheelPower() {
+    double calculateFlywheelPID() {
         double trueVelocity = (FW1.get_actual_velocity() * reverseFW1 + FW2.get_actual_velocity() * reverseFW2) / 2;
         error = targetVelocity - trueVelocity;
+
+        if (fabs(error) < 10 && !crossed) {
+            p_constant = kP;
+            crossed = true;
+        } else {
+            p_constant = speedkP;
+        }
 
         integral += error;
         derivative = error - prevError;
 
-        double motorVelocity = kP * error + kI * integral + kD * derivative;
+        double motorVelocity = p_constant * error + kI * integral + kD * derivative;
         prevError = error;
 
         pros::lcd::print(4, "Velocity: %f", trueVelocity);
@@ -95,18 +111,22 @@ namespace global {
 
     void flywheelPID(void* param) {
         while (true) {
-            currentVelocity += calculateFlywheelPower();
+            currentVelocity += calculateFlywheelPID();
 
-            FW1.move_velocity(currentVelocity * reverseFW1);
-            FW2.move_velocity(currentVelocity * reverseFW2);
+            FW1.move(currentVelocity * reverseFW1);
+            FW2.move(currentVelocity * reverseFW2);
 
             pros::delay(10);
         }
     }
-    
-    void updateDisplay() {
-        pros::lcd::print(0, "X: %f", odometry::robot.x);
-        pros::lcd::print(1, "Y: %f", odometry::robot.y);
-        pros::lcd::print(2, "Angle: %f", odometry::robot.angle);
+
+    void countDiscs(void* param) {
+        while (true) {
+            if (counter.get() - lastDist > discWidth)
+                discs += 1;
+            lastDist = counter.get();
+
+            pros::delay(10);
+        }
     }
 }

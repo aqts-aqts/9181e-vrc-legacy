@@ -20,9 +20,22 @@ namespace global {
         chassis.set_turn_pid(theta, aimSpeed);
     }
 
-    void back(double maxV) { // depreciated, uses standard pid drive
-        double distance = (wall.get() - rollerDist) / 25.4;
-        chassis.set_drive_pid(-distance, maxV, true);
-        chassis.wait_drive();
+    void roll() {
+        pros::c::optical_rgb_s_t RGB;
+        intake.move(rollerSpeed * reverseIntake);
+
+        while ((odometry::robot.team) ? RGB.blue > RGB.red: RGB.blue < RGB.red) {
+            RGB = colour.get_rgb();
+            pros::delay(10);    
+        }
+
+        intake.move(0);
+    }
+
+    void back(bool axis) { // 0 - X, 1 = Y
+        double target = (axis) ? rollerX2: rollerY1;
+        double error = target - ((axis) ? odometry::robot.x: odometry::robot.y);
+
+        chassis.set_drive_pid(error, backSpeed);
     }
 }
