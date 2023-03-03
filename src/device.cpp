@@ -60,7 +60,7 @@ namespace global {
         // velocity constants kP = 0.005, kI = 0.000001, kD = 0.01
 
         // flywheel constants
-        kP = 0.03; // proportional = positive when speeding up, negative when slowing down 
+        kP = 0.01; // proportional = positive when speeding up, negative when slowing down 
         kI = 0.000001; // integral = gains when under target, loses when over target
         kD = 0.01; // derivative = negative when approaching target, positive when leaving target
         speedkP = 0.005; // kP value used for speeding up
