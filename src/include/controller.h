@@ -12,11 +12,10 @@
 #define rollerX2 0 // x coordinate of second roller
 
 #define aimSpeed 90
-#define rollerSpeed -80
 #define backSpeed 80
 
 namespace global {
     void aim();
-    void roll();
+    void roll(double rollerSpeed);
     void back(bool axis);
 }

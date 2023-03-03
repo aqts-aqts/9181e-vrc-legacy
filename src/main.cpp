@@ -28,7 +28,7 @@ Drive chassis (
   //    (or gear ratio of tracking wheel)
   // eg. if your drive is 84:36 where the 36t is powered, your RATIO would be 2.333.
   // eg. if your drive is 36:60 where the 60t is powered, your RATIO would be 0.6.
-  ,1.667
+  ,1.6666667
 
   // Uncomment if using tracking wheels
   /*
@@ -95,6 +95,7 @@ void autonomous() {
   startTime = pros::millis();
   ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
 }
+
 void opcontrol() {
   targetVelocity = 420; // current flywheel velocity
   lastTarget = 420; // last flywheel velocity

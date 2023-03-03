@@ -13,7 +13,7 @@ namespace global {
 
     pros::Distance counter(-1);
     pros::Distance wall(-1);
-    pros::Optical colour(-1);
+    pros::Optical colour(7);
     pros::Vision vision(-1);
 
     pros::Rotation horizontalEncoder(6);
@@ -60,8 +60,7 @@ namespace global {
         // velocity constants kP = 0.005, kI = 0.000001, kD = 0.01
 
         // flywheel constants
-        // increase when undershooting, decrease when overshooting
-        kP = 0.01; // proportional = positive when speeding up, negative when slowing down 
+        kP = 0.03; // proportional = positive when speeding up, negative when slowing down 
         kI = 0.000001; // integral = gains when under target, loses when over target
         kD = 0.01; // derivative = negative when approaching target, positive when leaving target
         speedkP = 0.005; // kP value used for speeding up
@@ -77,7 +76,7 @@ namespace global {
         
         FW1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
         FW2.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-        intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
+        intake.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
         indexer.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 
         master.clear();
@@ -85,6 +84,8 @@ namespace global {
         verticalEncoder.reset();
         horizontalEncoder.reset_position();
         verticalEncoder.reset_position();
+
+        colour.set_led_pwm(50);
     }
 
     double calculateFlywheelPID() {
@@ -106,6 +107,7 @@ namespace global {
 
         pros::lcd::print(4, "Velocity: %f", trueVelocity);
         pros::lcd::print(5, "Target: %f", targetVelocity);
+        pros::lcd::print(6, "P Constant: %f", p_constant);
         return motorVelocity; 
     }
 

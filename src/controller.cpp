@@ -17,16 +17,45 @@ namespace global {
         
         double deltaTheta = atan2(dy, dx) * 180 / M_PI;
         double theta = chassis.imu.get_heading() + deltaTheta;
+        
         chassis.set_turn_pid(theta, aimSpeed);
+        chassis.wait_drive();
     }
 
-    void roll() {
-        pros::c::optical_rgb_s_t RGB;
+    void roll(double rollerSpeed) {
+        pros::c::optical_rgb_s_t RGB = colour.get_rgb();
         intake.move(rollerSpeed * reverseIntake);
 
-        while ((odometry::robot.team) ? RGB.blue > RGB.red: RGB.blue < RGB.red) {
-            RGB = colour.get_rgb();
-            pros::delay(10);    
+        bool initColour = (RGB.red > RGB.blue); // blue = 0, red = 1
+
+        if (odometry::robot.team && initColour) {
+            while (RGB.red > RGB.blue) {
+                RGB = colour.get_rgb();
+                pros::delay(10);  
+            }
+            while (RGB.blue > RGB.red) {
+                RGB = colour.get_rgb();
+                pros::delay(10); 
+            }
+        } else if (odometry::robot.team && !initColour) {
+            while (RGB.blue > RGB.red) {
+                RGB = colour.get_rgb();
+                pros::delay(10);  
+            }
+        } else if (!odometry::robot.team && initColour) {
+            while (RGB.red > RGB.blue) {
+                RGB = colour.get_rgb();
+                pros::delay(10); 
+            }
+        } else {
+            while (RGB.blue > RGB.red) {
+                RGB = colour.get_rgb();
+                pros::delay(10);  
+            }
+            while (RGB.red > RGB.blue) {
+                RGB = colour.get_rgb();
+                pros::delay(10); 
+            }
         }
 
         intake.move(0);
@@ -37,5 +66,6 @@ namespace global {
         double error = target - ((axis) ? odometry::robot.x: odometry::robot.y);
 
         chassis.set_drive_pid(error, backSpeed);
+        chassis.wait_drive();
     }
 }
