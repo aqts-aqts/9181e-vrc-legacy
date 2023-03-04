@@ -24,7 +24,8 @@ namespace global {
     extern pros::Distance wall;
     extern pros::Optical colour;
     extern pros::Vision vision;
-    extern pros::ADIDigitalOut expansion;
+    extern pros::ADIDigitalOut expansionUp;
+    extern pros::ADIDigitalOut expansionDown;
     
     extern pros::Rotation horizontalEncoder;
     extern pros::Rotation verticalEncoder;
@@ -32,6 +33,7 @@ namespace global {
     extern void init();
     extern void countDiscs(void* param);
     extern void flywheelPID(void* param);
+    extern void flywheelTask(void* param);
     extern int elapsed;
     extern int discs;
 

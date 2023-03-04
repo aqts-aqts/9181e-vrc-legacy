@@ -26,37 +26,38 @@ namespace odometry {
     double targetDistance;
 
     void init_odometry() {
-        robot.x = 0;
-        robot.y = 0;
-        robot.angle = 0;
+        robot.x = 0; // x coordinate of robot tracking center
+        robot.y = 0; // y coordinate of robot tracking center
+        robot.angle = 0; // total rotation of robot in radians
         robot.team = 0; // blue = 0, red = 1
     }
 
     void updateSensors() {
-        lastXTrack = curXTrack;
-        lastYTrack = curYTrack;
-        lastAngle = robot.angle;
+        lastXTrack = curXTrack; // x tracking wheel position at last update
+        lastYTrack = curYTrack; // y tracking wheel position at last update
+        lastAngle = robot.angle; // rotation of robot in radians at last update
 
-        curXTrack = (horizontalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360;
-        curYTrack = (verticalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360; 
-        robot.angle = chassis.imu.get_rotation() * M_PI / 180;
+        curXTrack = (horizontalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360; // current x tracking wheel position
+        curYTrack = (verticalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360;  // current y tracking wheel position
+        robot.angle = chassis.imu.get_rotation() * M_PI / 180; // current rotation of robot in radians
     }
 
     void updatePosition() {
-        deltaXTrack = curXTrack - lastXTrack;
-        deltaYTrack = curYTrack - lastYTrack;
-        deltaAngle = robot.angle - lastAngle;
+        deltaXTrack = curXTrack - lastXTrack; // change in x tracking wheel position
+        deltaYTrack = curYTrack - lastYTrack; // change in y tracking wheel position
+        deltaAngle = robot.angle - lastAngle; // change in rotation of robot in radians
 
-        if (deltaAngle == 0) {
-            deltaX = deltaXTrack;
-            deltaY = deltaYTrack;
+        if (deltaAngle == 0) { // if robot is not rotating
+            deltaX = deltaXTrack; // set change in x position to change in x tracking wheel position
+            deltaY = deltaYTrack; // set change in y position to change in y tracking wheel position
         } else {
-            deltaX = 2 * sin(deltaAngle / 2) * (deltaXTrack / deltaAngle + centerToXTracking);
-            deltaY = 2 * sin(deltaAngle / 2) * (deltaYTrack / deltaAngle + centerToYTracking);
+            deltaX = 2 * sin(deltaAngle / 2) * (deltaXTrack / deltaAngle + centerToXTracking); // use trig to find change in x position
+            deltaY = 2 * sin(deltaAngle / 2) * (deltaYTrack / deltaAngle + centerToYTracking); // use trig to find change in y position
+
         }
 
-        robot.x += cos(lastAngle) * deltaX + sin(lastAngle) * deltaY;
-        robot.y += -sin(lastAngle) * deltaX + cos(lastAngle) * deltaY;
+        robot.x += cos(lastAngle) * deltaX + sin(lastAngle) * deltaY; // convert change in x position to coordinates
+        robot.y += -sin(lastAngle) * deltaX + cos(lastAngle) * deltaY; // convert change in y position to coordinates
     }
 
     void updateDisplay() {

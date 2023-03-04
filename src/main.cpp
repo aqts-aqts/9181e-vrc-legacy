@@ -48,7 +48,8 @@ Drive chassis (
 
 void initialize() {
   // Print our branding over your terminal :D
-  expansion.set_value(1);
+  expansionUp.set_value(0);
+  expansionDown.set_value(0);
   init();
   odometry::init_odometry();
   ez::print_ez_template();
@@ -66,7 +67,7 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    Auton("Auto", programmingSkills)
+    Auton("Auto", left_side)
   });
 
   // Initialize chassis and auton selector
@@ -79,7 +80,8 @@ void disabled() {
 }
 
 void competition_initialize() {
-  expansion.set_value(1);
+  expansionUp.set_value(0);
+  expansionDown.set_value(0);
 }
 
 void autonomous() {
@@ -89,7 +91,7 @@ void autonomous() {
   chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
 
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+
   pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
 
   startTime = pros::millis();
@@ -97,8 +99,8 @@ void autonomous() {
 }
 
 void opcontrol() {
-  targetVelocity = 420; // current flywheel velocity
-  lastTarget = 420; // last flywheel velocity
+  targetVelocity = 0.775; // current flywheel velocity
+  lastTarget = 0.775; // last flywheel velocity
 
   int prevFly = 0; // previous flywheel state change
   int prevPower = 0; // previous power change
@@ -117,7 +119,7 @@ void opcontrol() {
   startTime = pros::millis();
 
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+  pros::Task flywheelControl(flywheelTask, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
   pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
 
   while (true) {
@@ -129,7 +131,7 @@ void opcontrol() {
 
     // Flywheel
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && elapsed - prevFly > 500) {
-      targetVelocity = (flywheel) ? 200: lastTarget;
+      targetVelocity = (flywheel) ? 0.3: lastTarget;
       flywheel = !flywheel;
       crossed = false;
       prevFly = elapsed;
@@ -137,13 +139,13 @@ void opcontrol() {
 
     // Control flywheel power
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && elapsed - prevPower > 100) { // flyPower = 0.805;
-      targetVelocity = 560;
-      lastTarget = 560;
+      targetVelocity = 0.95;
+      lastTarget = 0.95;
       crossed = false;
       prevPower = elapsed;
     } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && elapsed - prevPower > 100) { // flyPower = 0.75;
-      targetVelocity = 420;
-      lastTarget = 420;
+      targetVelocity = 0.775;
+      lastTarget = 0.775;
       crossed = false;
       prevPower = elapsed;
     }
@@ -172,11 +174,13 @@ void opcontrol() {
     }
 
     // Limit drive current
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) chassis.set_drive_current_limit(2500);
-    else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) chassis.set_drive_current_limit(1800);
+    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) chassis.set_drive_current_limit(2500);
+    // else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) chassis.set_drive_current_limit(1800);
 
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && elapsed > 70000) expansion.set_value(1);
-    // leave a bit of time before endgame as O(1) actions take non-zero time
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && elapsed > 70000) {
+      expansionUp.set_value(1);
+      expansionDown.set_value(1);
+    } // leave a bit of time before endgame as O(1) actions take non-zero time
 
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
     elapsed += ez::util::DELAY_TIME;

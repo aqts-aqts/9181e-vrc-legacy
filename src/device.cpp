@@ -1,5 +1,6 @@
 #include "EZ-Template/util.hpp"
 #include "main.h"
+#include "pros/adi.hpp"
 #include "pros/misc.h"
 #include "pros/motors.h"
 #include "pros/rtos.h"
@@ -18,7 +19,8 @@ namespace global {
 
     pros::Rotation horizontalEncoder(6);
     pros::Rotation verticalEncoder(8);
-    pros::ADIDigitalOut expansion(-1, 0);
+    pros::ADIDigitalOut expansionUp(-1, 0);
+    pros::ADIDigitalOut expansionDown(-1, 0);
 
     int elapsed;
     int discs;
@@ -60,10 +62,10 @@ namespace global {
         // velocity constants kP = 0.005, kI = 0.000001, kD = 0.01
 
         // flywheel constants
-        kP = 0.01; // proportional = positive when speeding up, negative when slowing down 
+        kP = 0.03; // proportional = positive when speeding up, negative when slowing down 
         kI = 0.000001; // integral = gains when under target, loses when over target
         kD = 0.01; // derivative = negative when approaching target, positive when leaving target
-        speedkP = 0.005; // kP value used for speeding up
+        speedkP = 0.01; // kP value used for speeding up
 
         p_constant = speedkP; // constant used for proportional control
 
@@ -117,6 +119,17 @@ namespace global {
 
             FW1.move(currentVelocity * reverseFW1);
             FW2.move(currentVelocity * reverseFW2);
+
+            pros::delay(10);
+        }
+    }
+
+    void flywheelTask(void* param) {
+        while (true) {
+            currentVelocity += calculateFlywheelPID();
+
+            FW1.move(targetVelocity * 127 * reverseFW1);
+            FW2.move(targetVelocity * 127 * reverseFW2);
 
             pros::delay(10);
         }
