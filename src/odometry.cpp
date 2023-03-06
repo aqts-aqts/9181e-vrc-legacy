@@ -37,27 +37,38 @@ namespace odometry {
         lastYTrack = curYTrack; // y tracking wheel position at last update
         lastAngle = robot.angle; // rotation of robot in radians at last update
 
-        curXTrack = (horizontalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360; // current x tracking wheel position
-        curYTrack = (verticalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360;  // current y tracking wheel position
+        // current x tracking wheel position in inches
+        curXTrack = (horizontalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360; 
+        // current y tracking wheel position in inches
+        curYTrack = (verticalEncoder.get_position() / 100.0) * trackingDiameter * M_PI / 360;  
         robot.angle = chassis.imu.get_rotation() * M_PI / 180; // current rotation of robot in radians
     }
 
     void updatePosition() {
-        deltaXTrack = curXTrack - lastXTrack; // change in x tracking wheel position
-        deltaYTrack = curYTrack - lastYTrack; // change in y tracking wheel position
-        deltaAngle = robot.angle - lastAngle; // change in rotation of robot in radians
+        // calculate change in x tracking wheel position
+        deltaXTrack = curXTrack - lastXTrack;
+        // calculate change in y tracking wheel position
+        deltaYTrack = curYTrack - lastYTrack;
+        // calculate change in rotation of robot in radians
+        deltaAngle = robot.angle - lastAngle;
 
-        if (deltaAngle == 0) { // if robot is not rotating
-            deltaX = deltaXTrack; // set change in x position to change in x tracking wheel position
-            deltaY = deltaYTrack; // set change in y position to change in y tracking wheel position
-        } else {
-            deltaX = 2 * sin(deltaAngle / 2) * (deltaXTrack / deltaAngle + centerToXTracking); // use trig to find change in x position
-            deltaY = 2 * sin(deltaAngle / 2) * (deltaYTrack / deltaAngle + centerToYTracking); // use trig to find change in y position
-
+        // if robot is not rotating
+        if (deltaAngle == 0) {
+            // set change in x to change in x tracking wheel position
+            deltaX = deltaXTrack;
+            // set change in y to change in y tracking wheel position
+            deltaY = deltaYTrack;
+        } else { // if robot rotated
+            // calculate change in x based on the angle rotated
+            deltaX = 2 * sin(deltaAngle / 2) * (deltaXTrack / deltaAngle + centerToXTracking);
+            // calculate change in y based on the angle rotated
+            deltaY = 2 * sin(deltaAngle / 2) * (deltaYTrack / deltaAngle + centerToYTracking);
         }
 
-        robot.x += cos(lastAngle) * deltaX + sin(lastAngle) * deltaY; // convert change in x position to coordinates
-        robot.y += -sin(lastAngle) * deltaX + cos(lastAngle) * deltaY; // convert change in y position to coordinates
+        // update robot's x position by rotating x change using rotation matrix
+        robot.x += cos(lastAngle) * deltaX + sin(lastAngle) * deltaY;
+        // update robot's y position by rotating y change using rotation matrix
+        robot.y += -sin(lastAngle) * deltaX + cos(lastAngle) * deltaY;
     }
 
     void updateDisplay() {
@@ -68,27 +79,32 @@ namespace odometry {
 
     void positionTrack(void* param) {
         while (true) {
-            updateSensors();
-            updatePosition();
-            updateDisplay();
+            updateSensors(); // update sensor values
+            updatePosition(); // update position
+            updateDisplay(); // update brain lcd display
             pros::delay(10);
         }
     }
 
     void move_to_point(double x, double y, double maxSpeed = DRIVE_SPEED, double maxturnSpeed = TURN_SPEED) {
-        double angle = fmod(chassis.imu.get_heading() + atan2(y - robot.y, x - robot.x) * 180 / M_PI, 360.0); // constrict angle
+        // get target angle and convert to degrees
+        double angle = fmod(chassis.imu.get_heading() + atan2(y - robot.y, x - robot.x) * 180 / M_PI, 360.0);
 
-        chassis.set_turn_pid(angle, maxturnSpeed);
+        chassis.set_turn_pid(angle, maxturnSpeed); // turn to angle
         chassis.wait_drive();
 
-        error = fabs(sqrt(pow(x - robot.x, 2) + pow(y - robot.y, 2)));
-        chassis.set_drive_pid(error, maxSpeed);
+        // use pythagorean theorem to find distance to point
+        error = fabs(sqrt(pow(x - robot.x, 2) + pow(y - robot.y, 2))); 
+
+        chassis.set_drive_pid(error, maxSpeed); // drive to point
         chassis.wait_drive();
     }
 
     void move_to_point_no_turn(double x, double y, double maxSpeed = DRIVE_SPEED) {
-        error = fabs(sqrt(pow(x - robot.x, 2) + pow(y - robot.y, 2)));
-        chassis.set_drive_pid(error, maxSpeed);
+        // use pythagorean theorem to find distance to point
+        error = fabs(sqrt(pow(x - robot.x, 2) + pow(y - robot.y, 2))); 
+
+        chassis.set_drive_pid(error, maxSpeed); // drive to point
         chassis.wait_drive();
     }
 }

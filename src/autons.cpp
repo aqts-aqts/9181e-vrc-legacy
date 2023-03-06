@@ -1,5 +1,6 @@
 #include "autons.hpp"
 #include "main.h"
+#include "pros/motors.h"
 using namespace global;
 
 const int DRIVE_SPEED = 110; // This is 110/127 (around 87% of max speed).  We don't suggest making this 127.
@@ -38,13 +39,13 @@ void modified_exit_condition() {
   chassis.set_exit_condition(chassis.drive_exit, 80, 50, 300, 150, 500, 500);
 }
 
-void left_side() {
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+void left_side() { // motor set 2
+  use_pid = true;
 
-  chassis.set_drive_pid(-4, DRIVE_SPEED, true); // back into roller
+  chassis.set_drive_pid(-3, DRIVE_SPEED, true); // back into roller
   chassis.wait_drive();
 
-  roll(80);
+  roll(60);
 
   chassis.set_drive_pid(2, DRIVE_SPEED, true); // back into roller
   chassis.wait_drive();
@@ -52,7 +53,7 @@ void left_side() {
   chassis.set_swing_pid(ez::LEFT_SWING, 54, SWING_SPEED); // turn to move to middle
   chassis.wait_drive();
 
-  targetVelocity = 545;
+  targetVelocity = 465;
 
   chassis.set_drive_pid(24, DRIVE_SPEED, true);
   chassis.wait_drive();
@@ -63,7 +64,7 @@ void left_side() {
   chassis.set_drive_pid(25, 40, true);
   chassis.wait_drive();
 
-  chassis.set_turn_pid(-38, TURN_SPEED); // face goal
+  chassis.set_turn_pid(-37, TURN_SPEED); // face goal
   chassis.wait_drive();
 
   chassis.set_drive_pid(10, DRIVE_SPEED, true);
@@ -71,33 +72,33 @@ void left_side() {
 
   for (int i = 0; i < 3; i++) {
     indexer.move(-indexerFeedSpeed * reverseIndexer);
-    pros::delay(400);
+    pros::delay(320);
     indexer.move(indexerFeedSpeed * reverseIndexer);
-    pros::delay(800);
+    pros::delay(320);
   }
 
-  targetVelocity = 600;
+  targetVelocity = 480;
 
   intake.move(127 * reverseIntake);
   indexer.move(127 * reverseIndexer);
 
-  chassis.set_swing_pid(ez::RIGHT_SWING, 42, TURN_SPEED);
+  chassis.set_swing_pid(ez::RIGHT_SWING, 41, TURN_SPEED);
   chassis.wait_drive();
 
   chassis.set_drive_pid(60, 80, true);
   chassis.wait_drive();
 
-  chassis.set_swing_pid(ez::LEFT_SWING, -61, TURN_SPEED);
+  chassis.set_swing_pid(ez::LEFT_SWING, -63, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(16, DRIVE_SPEED, true);
+  chassis.set_drive_pid(12, DRIVE_SPEED, true);
   chassis.wait_drive();
 
   for (int i = 0; i < 3; i++) {
     indexer.move(-indexerFeedSpeed * reverseIndexer);
-    pros::delay(400);
+    pros::delay(370);
     indexer.move(indexerFeedSpeed * reverseIndexer);
-    pros::delay(800);
+    pros::delay(370);
   }
 
   targetVelocity = 0;
@@ -105,12 +106,15 @@ void left_side() {
   intake.move(0);
 }
 
+void right_side() {
+}
+
 void solo_awp() {
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
+  use_pid = true;
 
   intake.move(-80 * reverseIntake); // roll roller
 
-  chassis.set_drive_pid(-4, DRIVE_SPEED, true); // back into roller
+  chassis.set_drive_pid(-3, DRIVE_SPEED, true); // back into roller
   chassis.wait_drive();
 
   intake.move(0);
@@ -171,14 +175,18 @@ void solo_awp() {
   intake.move(0);
 }
 
-void programmingSkills1() {
+void programmingSkills() { // n = 0.001 (use motor set 1)
+  use_pid = false;
+
+  double n = 0.001;
+
   chassis.set_drive_pid(-3, DRIVE_SPEED, true); // back into roller
   chassis.wait_drive();
 
-  printf("Checkpoint 1 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 1 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 1 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 1 Y: %f\n", odometry::robot.y);
 
-  roll(80);
+  roll(60);
 
   chassis.set_swing_pid(ez::RIGHT_SWING, -45, SWING_SPEED);
   chassis.wait_drive();
@@ -189,61 +197,61 @@ void programmingSkills1() {
   chassis.set_drive_pid(21, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 2 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 2 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 2 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 2 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(90, TURN_SPEED);
   chassis.wait_drive();
 
-  targetVelocity = 420;
+  targetVelocity = 0.763 + n; // 77
 
   intake.move(0);
 
   chassis.set_drive_pid(-6, DRIVE_SPEED, true); // back into roller
   chassis.wait_drive();
 
-  printf("Checkpoint 3 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 3 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 3 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 3 Y: %f\n", odometry::robot.y);
   
-  roll(80);
+  roll(60);
 
   chassis.set_swing_pid(ez::RIGHT_SWING, 0, SWING_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(40, DRIVE_SPEED, true);
+  chassis.set_drive_pid(36, DRIVE_SPEED, true); // 40
   chassis.wait_drive();
 
-  printf("Checkpoint 4 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 4 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 4 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 4 Y: %f\n", odometry::robot.y);
 
-  chassis.set_turn_pid(-5, TURN_SPEED);
+  chassis.set_turn_pid(-5, TURN_SPEED); // 0
   chassis.wait_drive();
 
-  indexer.move(-indexerFeedSpeed * reverseIndexer); // shoot
+  indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
 
   intake.move(127 * reverseIntake);
   indexer.move(127 * reverseIndexer);
 
-  targetVelocity = 420;
+  targetVelocity = 0.768 + n; // 77
 
-  chassis.set_drive_pid(-31, DRIVE_SPEED, true);
+  chassis.set_turn_pid(0, TURN_SPEED);
+  chassis.wait_drive();
+  
+  chassis.set_drive_pid(-27, DRIVE_SPEED, true); // -31
   chassis.wait_drive();
 
-  printf("Checkpoint 5 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 5 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 5 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 5 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(47, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(54, 80, true);
+  chassis.set_drive_pid(53.5, 70, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 6 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 6 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 6 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 6 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(-45, TURN_SPEED);
   chassis.wait_drive();
@@ -251,48 +259,48 @@ void programmingSkills1() {
   chassis.set_drive_pid(7, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 7 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 7 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 7 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 7 Y: %f\n", odometry::robot.y);
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
 
-  targetVelocity = 400;
+  targetVelocity = 0.763 + n; // 77
 
   chassis.set_drive_pid(-5, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 8 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 8 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 8 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 8 Y: %f\n", odometry::robot.y);
 
-  chassis.set_turn_pid(44, TURN_SPEED);
+  chassis.set_turn_pid(45, TURN_SPEED);
   chassis.wait_drive();
 
   chassis.set_drive_pid(35, 80, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 9 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 9 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 9 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 9 Y: %f\n", odometry::robot.y);
 
   intake.move(127 * reverseIntake);
   indexer.move(127 * reverseIndexer);
 
-  chassis.set_drive_pid(24, 44, true);
+  chassis.set_drive_pid(24, 40, true); // 24
   chassis.wait_drive();
 
-  printf("Checkpoint 10 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 10 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 10 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 10 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(-90, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(34, DRIVE_SPEED, true);
+  chassis.set_drive_pid(34, DRIVE_SPEED, true); // 34
   chassis.wait_drive();
 
-  printf("Checkpoint 11 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 11 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 11 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 11 Y: %f\n", odometry::robot.y);
 
-  chassis.set_turn_pid(-95, TURN_SPEED);
+  chassis.set_turn_pid(-94, TURN_SPEED);
   chassis.wait_drive();
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
@@ -301,27 +309,28 @@ void programmingSkills1() {
   intake.move(127 * reverseIntake);
   indexer.move(127 * reverseIndexer);
 
-  chassis.set_turn_pid(92.5, TURN_SPEED);
+  chassis.set_turn_pid(92.5, TURN_SPEED); // 92.5
   chassis.wait_drive();
 
-  chassis.set_drive_pid(56, DRIVE_SPEED, true);
+  chassis.set_drive_pid(56, DRIVE_SPEED, true); // 56
   chassis.wait_drive();
 
-  printf("Checkpoint 11 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 11 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 11 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 11 Y: %f\n", odometry::robot.y);
 
   chassis.set_swing_pid(ez::RIGHT_SWING, 180, SWING_SPEED);
   chassis.wait_drive();
 
+  pros::delay(200); // delay a bit to let disc intake
   intake.move(0);
 
-  chassis.set_drive_pid(-5, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-5.5, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 12 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 12 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 12 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 12 Y: %f\n", odometry::robot.y);
 
-  // roll(80);
+  roll(60);
 
   chassis.set_swing_pid(ez::RIGHT_SWING, 142, SWING_SPEED);
   chassis.wait_drive();
@@ -329,23 +338,23 @@ void programmingSkills1() {
   chassis.set_drive_pid(21, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 13 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 13 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 13 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 13 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(270, TURN_SPEED);
   chassis.wait_drive();
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
 
-  chassis.set_drive_pid(-6, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-7, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 14 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 14 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 14 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 14 Y: %f\n", odometry::robot.y);
 
-  // roll(80);
+  roll(60);
 
-  chassis.set_drive_pid(21, DRIVE_SPEED, true);
+  chassis.set_drive_pid(20, DRIVE_SPEED, true);
 
   chassis.wait_until(5);
 
@@ -354,75 +363,75 @@ void programmingSkills1() {
 
   chassis.wait_drive();
 
-  printf("Checkpoint 15 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 15 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 15 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 15 Y: %f\n", odometry::robot.y);
 
-  chassis.set_drive_pid(22, 44, true);
+  chassis.set_drive_pid(26, 44, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 16 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 16 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 16 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 16 Y: %f\n", odometry::robot.y);
 
-  targetVelocity = 405;
+  targetVelocity = 0.758 + n; // 77
 
-  chassis.set_drive_pid(-39, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-41, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 17 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 17 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 17 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 17 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(179, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(49, DRIVE_SPEED, true);
+  chassis.set_drive_pid(46, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 18 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 18 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 18 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 18 Y: %f\n", odometry::robot.y);
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
 
   indexer.move(127 * reverseIntake);
 
-  targetVelocity = 405;
+  targetVelocity = 0.76 + n; // 77
 
-  chassis.set_drive_pid(-40, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-37, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 19 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 19 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 19 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 19 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(223, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(60, 80, true);
+  chassis.set_drive_pid(60, 70, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 20 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 20 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 20 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 20 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(135, TURN_SPEED);
   chassis.wait_drive();
 
-  chassis.set_drive_pid(7, DRIVE_SPEED, true);
+  chassis.set_drive_pid(5, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 21 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 21 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 21 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 21 Y: %f\n", odometry::robot.y);
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
 
   indexer.move(127 * reverseIndexer);
 
-  targetVelocity = 400;
+  targetVelocity = 0.76 + n;
 
-  chassis.set_drive_pid(-5, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-2, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 22 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 22 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 22 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 22 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(223, TURN_SPEED);
   chassis.wait_drive();
@@ -430,374 +439,45 @@ void programmingSkills1() {
   chassis.set_drive_pid(32, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 23 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 23 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 23 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 23 Y: %f\n", odometry::robot.y);
 
-  chassis.set_drive_pid(22, 80, true);
+  chassis.set_drive_pid(26, 60, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 24 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 24 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 24 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 24 Y: %f\n", odometry::robot.y);
 
-  chassis.set_turn_pid(90, TURN_SPEED);
+  chassis.set_turn_pid(89, TURN_SPEED);
   chassis.wait_drive();
 
   chassis.set_drive_pid(32, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 25 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 25 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 25 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 25 Y: %f\n", odometry::robot.y);
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
 
   indexer.move(127 * reverseIndexer);
 
-  targetVelocity = 420;
+  targetVelocity = 0.77 + n;
 
-  chassis.set_turn_pid(-72, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(42, DRIVE_SPEED, true);
-  chassis.wait_drive();
-  
-  printf("Checkpoint 26 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 26 Y: %f \n", odometry::robot.y);
-
-  chassis.set_drive_pid(24, 80, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 27 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 27 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(35, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 28 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 28 Y: %f \n", odometry::robot.y);
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  intake.move(0);
-  indexer.move(0);
-
-  chassis.set_drive_pid(-56, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 29 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 29 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(54, TURN_SPEED);
-  chassis.wait_drive();
-
-  expansionUp.set_value(1);
-  expansionDown.set_value(1);
-}
-
-void programmingSkills() {
-  pros::Task flywheelControl(flywheelTask, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
-
-  chassis.set_drive_pid(-3, DRIVE_SPEED, true); // back into roller
-  chassis.wait_drive();
-
-  printf("Checkpoint 1 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 1 Y: %f \n", odometry::robot.y);
-
-  roll(80);
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, -45, SWING_SPEED);
-  chassis.wait_drive();
-
-  intake.move(127 * reverseIntake); // start intake
-  indexer.move(127 * reverseIndexer);
-
-  chassis.set_drive_pid(21, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 2 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 2 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(90, TURN_SPEED);
-  chassis.wait_drive();
-
-  targetVelocity = 0.775;
-
-  intake.move(0);
-
-  chassis.set_drive_pid(-6, DRIVE_SPEED, true); // back into roller
-  chassis.wait_drive();
-
-  printf("Checkpoint 3 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 3 Y: %f \n", odometry::robot.y);
-  
-  roll(80);
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, 0, SWING_SPEED);
+  chassis.set_turn_pid(-71, TURN_SPEED);
   chassis.wait_drive();
 
   chassis.set_drive_pid(40, DRIVE_SPEED, true);
   chassis.wait_drive();
-
-  printf("Checkpoint 4 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 4 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(-5, TURN_SPEED);
-  chassis.wait_drive();
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer); // shoot
-  pros::delay(1200);
-
-  chassis.set_turn_pid(0, TURN_SPEED);
-  chassis.wait_drive();
-
-  intake.move(127 * reverseIntake);
-  indexer.move(127 * reverseIndexer);
-
-  targetVelocity = 0.775;
-
-  chassis.set_drive_pid(-31, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 5 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 5 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(47, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(54, 80, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 6 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 6 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(-45, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(7, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 7 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 7 Y: %f \n", odometry::robot.y);
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  targetVelocity = 0.775;
-
-  chassis.set_drive_pid(-5, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 8 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 8 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(44, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(35, 80, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 9 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 9 Y: %f \n", odometry::robot.y);
-
-  intake.move(127 * reverseIntake);
-  indexer.move(127 * reverseIndexer);
-
-  chassis.set_drive_pid(24, 44, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 10 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 10 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(-90, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(34, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 11 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 11 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(-95, TURN_SPEED);
-  chassis.wait_drive();
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  intake.move(127 * reverseIntake);
-  indexer.move(127 * reverseIndexer);
-
-  chassis.set_turn_pid(92.5, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(56, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 11 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 11 Y: %f \n", odometry::robot.y);
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, 180, SWING_SPEED);
-  chassis.wait_drive();
-
-  intake.move(0);
-
-  chassis.set_drive_pid(-5, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 12 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 12 Y: %f \n", odometry::robot.y);
-
-  roll(80);
-
-  chassis.set_swing_pid(ez::RIGHT_SWING, 142, SWING_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(21, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 13 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 13 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(270, TURN_SPEED);
-  chassis.wait_drive();
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-
-  chassis.set_drive_pid(-6, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 14 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 14 Y: %f \n", odometry::robot.y);
-
-  roll(80);
-
-  chassis.set_drive_pid(21, DRIVE_SPEED, true);
-
-  chassis.wait_until(5);
-
-  intake.move(127 * reverseIntake);
-  indexer.move(127 * reverseIndexer);
-
-  chassis.wait_drive();
-
-  printf("Checkpoint 15 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 15 Y: %f \n", odometry::robot.y);
-
-  chassis.set_drive_pid(22, 44, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 16 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 16 Y: %f \n", odometry::robot.y);
-
-  targetVelocity = 0.775;
-
-  chassis.set_drive_pid(-39, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 17 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 17 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(179, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(49, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 18 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 18 Y: %f \n", odometry::robot.y);
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  indexer.move(127 * reverseIntake);
-
-  targetVelocity = 0.775;
-
-  chassis.set_drive_pid(-40, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 19 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 19 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(223, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(60, 80, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 20 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 20 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(135, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(7, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 21 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 21 Y: %f \n", odometry::robot.y);
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  indexer.move(127 * reverseIndexer);
-
-  targetVelocity = 0.775;
-
-  chassis.set_drive_pid(-5, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 22 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 22 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(223, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(32, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 23 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 23 Y: %f \n", odometry::robot.y);
-
-  chassis.set_drive_pid(22, 80, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 24 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 24 Y: %f \n", odometry::robot.y);
-
-  chassis.set_turn_pid(90, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(32, DRIVE_SPEED, true);
-  chassis.wait_drive();
-
-  printf("Checkpoint 25 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 25 Y: %f \n", odometry::robot.y);
-
-  indexer.move(-indexerFeedSpeed * reverseIndexer);
-  pros::delay(1200);
-
-  indexer.move(127 * reverseIndexer);
-
-  targetVelocity = 0.775;
-
-  chassis.set_turn_pid(-72, TURN_SPEED);
-  chassis.wait_drive();
-
-  chassis.set_drive_pid(42, DRIVE_SPEED, true);
-  chassis.wait_drive();
   
-  printf("Checkpoint 26 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 26 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 26 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 26 Y: %f\n", odometry::robot.y);
 
-  chassis.set_drive_pid(24, 80, true);
+  chassis.set_drive_pid(26, 80, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 27 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 27 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 27 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 27 Y: %f\n", odometry::robot.y);
 
   chassis.set_turn_pid(0, TURN_SPEED);
   chassis.wait_drive();
@@ -805,8 +485,8 @@ void programmingSkills() {
   chassis.set_drive_pid(35, DRIVE_SPEED, true);
   chassis.wait_drive();
 
-  printf("Checkpoint 28 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 28 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 28 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 28 Y: %f\n", odometry::robot.y);
 
   indexer.move(-indexerFeedSpeed * reverseIndexer);
   pros::delay(1200);
@@ -814,18 +494,24 @@ void programmingSkills() {
   intake.move(0);
   indexer.move(0);
 
-  chassis.set_drive_pid(-56, DRIVE_SPEED, true);
+  chassis.set_drive_pid(-63, DRIVE_SPEED, true); // -60
   chassis.wait_drive();
 
-  printf("Checkpoint 29 X: %f \n", odometry::robot.x);
-  printf("Checkpoint 29 Y: %f \n", odometry::robot.y);
+  printf("\nCheckpoint 29 X: %f\n", odometry::robot.x);
+  printf("\nCheckpoint 29 Y: %f\n", odometry::robot.y);
 
-  chassis.set_turn_pid(54, TURN_SPEED);
+  chassis.set_turn_pid(43, TURN_SPEED); // 58
   chassis.wait_drive();
 
-  expansionUp.set_value(1);
-  expansionDown.set_value(1);
+  chassis.set_drive_pid(10, DRIVE_SPEED, true); // 3
+  chassis.wait_drive();
+
+  expansionUpL.set_value(1);
+  expansionDownL.set_value(1);
+  expansionUpR.set_value(1);
+  expansionDownR.set_value(1);
 }
 
 void test() {
+  roll(60);
 }

@@ -13,7 +13,6 @@
 #define intakeFeedSpeed 127
 #define discWidth 25
 
-
 namespace global {
     extern pros::Motor FW1;
     extern pros::Motor FW2;
@@ -24,8 +23,10 @@ namespace global {
     extern pros::Distance wall;
     extern pros::Optical colour;
     extern pros::Vision vision;
-    extern pros::ADIDigitalOut expansionUp;
-    extern pros::ADIDigitalOut expansionDown;
+    extern pros::ADIDigitalOut expansionUpL;
+    extern pros::ADIDigitalOut expansionDownL;
+    extern pros::ADIDigitalOut expansionUpR;
+    extern pros::ADIDigitalOut expansionDownR;
     
     extern pros::Rotation horizontalEncoder;
     extern pros::Rotation verticalEncoder;
@@ -33,7 +34,6 @@ namespace global {
     extern void init();
     extern void countDiscs(void* param);
     extern void flywheelPID(void* param);
-    extern void flywheelTask(void* param);
     extern int elapsed;
     extern int discs;
 
@@ -42,6 +42,7 @@ namespace global {
     extern double lastTarget;
 
     extern bool crossed;
+    extern bool use_pid;
 
     extern int startTime;
 }

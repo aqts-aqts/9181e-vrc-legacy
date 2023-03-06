@@ -1,7 +1,7 @@
 {
   "py/object": "pros.conductor.project.Project",
   "py/state": {
-    "project_name": "9181E",
+    "project_name": "LeftSideBlue",
     "target": "v5",
     "templates": {
       "EZ-Template": {
@@ -189,7 +189,7 @@
     },
     "upload_options": {
       "icon": "planet",
-      "slot": 1
+      "slot": 2
     }
   }
 }
