@@ -1,18 +1,10 @@
 #pragma once
 #include "main.h"
 
-#define centerToXTracking 5.54753 // distance from tracking center to tracking wheel
-#define centerToYTracking 0.17076 // distance from tracking center to middle of left wheels
+#define centerToXTracking 0 // distance from tracking center to tracking wheel
+#define centerToYTracking 0 // distance from tracking center to middle of left wheels
 #define wheelDiameter 3.25 // diameter of the side wheels
 #define trackingDiameter 2.75 // diameter of tracking wheel
-
-// #define blueHeight 0 // height of blue goal
-// #define redHeight 0 // height of red goal
-// #define launchAngle 0 // angle of flywheel launch
-// #define launchHeight 0 // height of flywheel launch
-
-// #define gravity 9.81 // gravitational constant
-// #define flyRadius 0 // radius of flywheel in METERS
 
 namespace odometry {
     struct Robot {

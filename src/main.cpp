@@ -1,5 +1,8 @@
 #include "main.h"
+#include "EZ-Template/sdcard.hpp"
+#include "EZ-Template/util.hpp"
 #include "autons.hpp"
+#include "pros/imu.h"
 #include "pros/misc.h"
 #include "pros/rtos.h"
 #include <set>
@@ -8,11 +11,11 @@ using namespace global;
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  {-17, -9}
+  {-5, -6, -7} // non-skills/programming: -1, -2, -3; driver skills: -5, -6, -7
 
   // Right Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  ,{5, 3}
+  ,{1, 2, 3} // non-skills/programming: 5, 6, 7; driver skills: 1, 2, 3
 
   // IMU Port
   ,16
@@ -29,7 +32,7 @@ Drive chassis (
   //    (or gear ratio of tracking wheel)
   // eg. if your drive is 84:36 where the 36t is powered, your RATIO would be 2.333.
   // eg. if your drive is 36:60 where the 60t is powered, your RATIO would be 0.6.
-  ,1.6666667
+  ,1.66667
 
   // Uncomment if using tracking wheels
   /*
@@ -48,19 +51,17 @@ Drive chassis (
 );
 
 void initialize() {
-  // Print our branding over your terminal :D
-  expansionUpL.set_value(0);
-  expansionDownL.set_value(0);
-  expansionUpR.set_value(0);
-  expansionDownR.set_value(0);
+  flaps.set_value(0);
   init();
+
+  // Print our branding over your terminal :D
   odometry::init_odometry();
   ez::print_ez_template();
   pros::delay(500); // Stop the user from doing anything while legacy ports configure.
 
   // Configure your chassis controls
   chassis.toggle_modify_curve_with_controller(true); // Enables modifying the controller curve with buttons on the joysticks
-  chassis.set_active_brake(0.1); // Sets the active brake kP. We recommend 0.1.
+  chassis.set_active_brake(0.06); // Sets the active brake kP. We recommend 0.1.
   chassis.set_curve_default(0, 0); // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)  
   default_constants(); // Set the drive to your own constants from autons.cpp!
 
@@ -70,7 +71,7 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    Auton("Auto", left_side)
+    Auton("Auto", driverSkills)
   });
 
   // Initialize chassis and auton selector
@@ -83,10 +84,15 @@ void disabled() {
 }
 
 void competition_initialize() {
-  expansionUpL.set_value(0);
-  expansionDownL.set_value(0);
-  expansionUpR.set_value(0);
-  expansionDownR.set_value(0);
+  flaps.set_value(0);
+  // . . .
+}
+
+void pre_autonomous() {
+  chassis.reset_pid_targets(); // Resets PID targets to 0
+  chassis.reset_gyro(); // Reset gyro position to 0
+  chassis.reset_drive_sensor(); // Reset drive sensors to 0
+  chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
 }
 
 void autonomous() {
@@ -96,41 +102,22 @@ void autonomous() {
   chassis.set_drive_brake(MOTOR_BRAKE_HOLD); // Set motors to hold.  This helps autonomous consistency.
 
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
-  // pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
 
-  startTime = pros::millis();
   ez::as::auton_selector.call_selected_auton(); // Calls selected auton from autonomous selector.
 }
 
 void opcontrol() {
-  use_pid = false;
+  bool flapState = false;
+  bool clawState = false;
+  int lastFlapChange = 0;
+  int lastCatapultShot = 0;
+  int lastClawChange = 0;
 
-  // set 1 - 0.766, set 2
-  targetVelocity = 0.764; // current flywheel velocity
-  lastTarget = 0.764; // last flywheel velocity
+  pre_autonomous();
+  ez::as::auton_selector.call_selected_auton(); // Calls driver skills code
 
-  int prevA = 0; // previous flywheel state change
-  int prevPower = 0; // previous power change
-
-  bool flywheel = true; // flywheel state
-
-  // This is preference to what you like to drive on.
   chassis.set_drive_brake(MOTOR_BRAKE_BRAKE);
-  FW1.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-  FW2.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-  intake.set_brake_mode(pros::E_MOTOR_BRAKE_COAST);
-  indexer.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-
-  chassis.set_drive_current_limit(2500);
-
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
-  pros::Task flywheelControl(flywheelPID, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Flywheel Control Task"); // Start flywheel control task
-  // pros::Task discCounting(countDiscs, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Disc Counting Task"); // Start disc counting task
-
-  use_pid = false;
-
-  startTime = pros::millis();
 
   while (true) {
     // chassis.tank(); // Tank control
@@ -139,76 +126,40 @@ void opcontrol() {
     // chassis.arcade_flipped(ez::SPLIT); // Flipped split arcade
     // chassis.arcade_standard(ez::SINGLE); // Flipped single arcade
 
-    // Flywheel
-    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && elapsed - prevA > 500) {
-    //   targetVelocity = (flywheel) ? 0.6: lastTarget;
-    //   flywheel = !flywheel;
-    //   crossed = false;
-    //   prevA = elapsed;
-    // }
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1) && elapsed - lastCatapultShot > catapultCooldown) {
+      lastCatapultShot = elapsed; // Set last catapult shot to current time
+      activate_catapult(catapultRPM); // Activate catapult; put down to be able to pickup triball
+    } 
+    
+    if (elapsed - lastCatapultShot > autoToManualCooldown) { // ONLY run manual control (don't allow if cooldown not over)
+      if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2))
+        catapult.move_velocity(catapultRPM); // Run catapult
+      else
+        catapult.move_velocity(0); // Stop
+    }
+    
 
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_A) && elapsed - prevA > 1000) {
-      roll(80);
-      prevA = elapsed;
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B) && elapsed - lastFlapChange > flapCooldown) {
+      lastFlapChange = elapsed; // Set last flap change to current time
+      flapState = !flapState; // Toggle flap state
+      flaps.set_value(flapState); // Set flap to state
     }
 
-    // Control flywheel power
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && elapsed - prevPower > 100) { // flyPower = 0.805;
-      targetVelocity = 0.95;
-      lastTarget = 0.95;
-      crossed = false;
-      prevPower = elapsed;
-    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2) && elapsed - prevPower > 100) { // flyPower = 0.75;
-      targetVelocity = 0.764;
-      lastTarget = 0.764;
-      crossed = false;
-      prevPower = elapsed;
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1) && elapsed - lastClawChange > clawCooldown) {
+      lastClawChange = elapsed; // Set last claw change to current time
+      if (clawState) // If claw is up
+        activate_claw(clawRPM * clawRaiseSpeed); // Activate claw
+      else // If claw is down
+        deactivate_claw(clawRPM * clawLowerSpeed); // Deactivate claw
+      clawState = !clawState; // Toggle claw state
+    } else if (elapsed - lastClawChange > clawDuration) { // ONLY run manual control (don't allow if cooldown not over)
+      // Set claw to manual control
+      claw.move(master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) * clawManualSpeed * reverseClaw);
     }
 
-    // Aim
-    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X)) aim();
-
-    // Intake/indexer
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) { // intake
-      intake.move(intakeFeedSpeed * reverseIntake * ((discs > 3) ? -1: 1));
-      indexer.move(indexerFeedSpeed * reverseIndexer);
-    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) { // feed
-      indexer.move(-indexerFeedSpeed * reverseIndexer);
-    } else if (!master.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) { // stop
-      intake.move(0);
-      indexer.move(0);
-    }
-
-    // Rollers
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y)) {
-      intake.move(127 * reverseIntake); // Roll in
-    }
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B)) { // outtake
-      intake.move(-127 * reverseIntake);
-      // indexer.move(-127 * reverseIndexer);
-    }
-
-    // Limit drive current
-    // if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) chassis.set_drive_current_limit(2500);
-    // else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) chassis.set_drive_current_limit(1800);
-
-    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_X) && elapsed > 0) {
-      expansionUpL.set_value(1);
-      expansionUpR.set_value(1);
-      expansionDownL.set_value(1);
-      expansionDownR.set_value(1);
-    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN) && elapsed > 0) {
-      expansionDownL.set_value(1);
-      expansionDownR.set_value(1);
-    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT) && elapsed > 0) {
-      expansionUpL.set_value(1);
-      expansionDownL.set_value(1);
-      expansionDownR.set_value(1);
-    } else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT) && elapsed > 0) {
-      expansionUpR.set_value(1);
-      expansionDownL.set_value(1);
-      expansionDownR.set_value(1);
-    } // leave a bit of time before endgame as O(1) actions take non-zero time
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2))
+      claw.tare_position();
+    
     pros::delay(ez::util::DELAY_TIME); // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
     elapsed += ez::util::DELAY_TIME;
   }

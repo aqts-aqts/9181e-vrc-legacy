@@ -78,8 +78,9 @@ bin/autons.cpp.o: src/autons.cpp include/autons.hpp \
  include/pros/vision.hpp include/pros/vision.h include/main.h \
  include/api.h include/EZ-Template/api.hpp include/EZ-Template/auton.hpp \
  include/EZ-Template/auton_selector.hpp include/EZ-Template/sdcard.hpp \
- include/../src/include/global.h include/../src/include/device.h \
- include/../src/include/odometry.h include/../src/include/controller.h
+ include/../src/include/global.h include/../src/include/async.h \
+ include/../src/include/device.h include/../src/include/odometry.h \
+ include/../src/include/controller.h
 include/autons.hpp:
 include/EZ-Template/drive/drive.hpp:
 include/EZ-Template/PID.hpp:
@@ -237,6 +238,7 @@ include/EZ-Template/auton.hpp:
 include/EZ-Template/auton_selector.hpp:
 include/EZ-Template/sdcard.hpp:
 include/../src/include/global.h:
+include/../src/include/async.h:
 include/../src/include/device.h:
 include/../src/include/odometry.h:
 include/../src/include/controller.h:

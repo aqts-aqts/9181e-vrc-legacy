@@ -78,8 +78,9 @@ bin/device.cpp.o: src/device.cpp include/EZ-Template/util.hpp \
  include/EZ-Template/auton.hpp include/EZ-Template/auton_selector.hpp \
  include/EZ-Template/drive/drive.hpp include/EZ-Template/sdcard.hpp \
  include/autons.hpp include/../src/include/global.h \
- include/../src/include/device.h include/../src/include/odometry.h \
- include/../src/include/controller.h include/pros/adi.hpp
+ include/../src/include/async.h include/../src/include/device.h \
+ include/../src/include/odometry.h include/../src/include/controller.h \
+ include/pros/adi.hpp
 include/EZ-Template/util.hpp:
 include/api.h:
 include/pros/adi.h:
@@ -237,6 +238,7 @@ include/EZ-Template/drive/drive.hpp:
 include/EZ-Template/sdcard.hpp:
 include/autons.hpp:
 include/../src/include/global.h:
+include/../src/include/async.h:
 include/../src/include/device.h:
 include/../src/include/odometry.h:
 include/../src/include/controller.h:

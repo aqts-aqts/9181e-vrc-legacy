@@ -4,9 +4,10 @@
       "name": "PROS Project",
       "includePath": [
         "${workspaceFolder}/**",
-        "c:\\Users\\alvin\\OneDrive\\Desktop\\9181e\\include",
-        "c:\\Users\\alvin\\Coding\\9181e\\include",
-        "c:\\Users\\alvin\\Coding\\9181E\\include"
+        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
+        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
+        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
+        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include"
       ],
       "defines": [
         "_DEBUG",
@@ -17,10 +18,10 @@
       "cStandard": "c17",
       "cppStandard": "c++17",
       "intelliSenseMode": "gcc-arm",
-      "compileCommands": "c:\\Users\\alvin\\Coding\\9181E\\compile_commands.json",
+      "compileCommands": "c:\\Users\\alvin\\Coding\\9181e-vrc\\compile_commands.json",
       "browse": {
         "path": [
-          "c:\\Users\\alvin\\Coding\\9181E"
+          "c:\\Users\\alvin\\Coding\\9181e-vrc"
         ],
         "limitSymbolsToIncludedHeaders": true,
         "databaseFilename": ""

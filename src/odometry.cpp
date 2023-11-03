@@ -82,7 +82,7 @@ namespace odometry {
             updateSensors(); // update sensor values
             updatePosition(); // update position
             updateDisplay(); // update brain lcd display
-            pros::delay(10);
+            pros::delay(ez::util::DELAY_TIME);
         }
     }
 

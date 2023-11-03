@@ -1,48 +1,33 @@
 #pragma once
 #include "main.h"
 
-#define reverseFW1 -1
-#define reverseFW2 1
-#define reverseIntake -1
-#define reverseIndexer -1
+#define autoToManualCooldown 1200
+#define catapultCooldown 800
+#define flapCooldown 500
+#define clawCooldown 500
 
-#define aimTurnSpeed 117 // easier turning as more power can be allocated to turn rather than just lowering
-#define flywheelGearRatio 7.5 // ratio between motor power and angular velocity of flywheel
+#define clawLowerSpeed 1
+#define clawRaiseSpeed 0.8
+#define clawManualSpeed 0.8
 
-#define indexerFeedSpeed 100
-#define intakeFeedSpeed 127
-#define discWidth 25
+#define clawDuration 1200
+
+#define reverseCatapult 1
+#define reverseClaw 1
+
+#define clawRPM 200
+#define catapultRPM 100
 
 namespace global {
-    extern pros::Motor FW1;
-    extern pros::Motor FW2;
-    extern pros::Motor intake;
-    extern pros::Motor indexer;
+    extern int elapsed;
 
-    extern pros::Distance counter;
-    extern pros::Distance wall;
-    extern pros::Optical colour;
-    extern pros::Vision vision;
-    extern pros::ADIDigitalOut expansionUpL;
-    extern pros::ADIDigitalOut expansionDownL;
-    extern pros::ADIDigitalOut expansionUpR;
-    extern pros::ADIDigitalOut expansionDownR;
-    
+    extern pros::Motor catapult;
+    extern pros::Motor claw;
+
+    extern pros::ADIDigitalOut flaps;
+
     extern pros::Rotation horizontalEncoder;
     extern pros::Rotation verticalEncoder;
-    
+
     extern void init();
-    extern void countDiscs(void* param);
-    extern void flywheelPID(void* param);
-    extern int elapsed;
-    extern int discs;
-
-    extern double targetVelocity;
-    extern double currentVelocity;
-    extern double lastTarget;
-
-    extern bool crossed;
-    extern bool use_pid;
-
-    extern int startTime;
 }
