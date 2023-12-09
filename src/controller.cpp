@@ -13,4 +13,8 @@ namespace global {
     void deactivate_claw(double velocity) {
         claw.move_absolute(clawReset, -velocity * reverseClaw);
     }
+
+    void hold_claw(double velocity) {
+        claw.move_absolute(clawHold, -velocity * reverseClaw);
+    }
 }

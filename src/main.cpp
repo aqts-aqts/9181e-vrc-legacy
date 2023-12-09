@@ -11,14 +11,14 @@ using namespace global;
 Drive chassis (
   // Left Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  {-5, -6, -7} // non-skills/programming: -1, -2, -3; driver skills: -5, -6, -7
+  {-1, -2, -3} // non-skills/programming: -1, -2, -3; driver skills: -5, -6, -7
 
   // Right Chassis Ports (negative port will reverse it!)
   //   the first port is the sensored port (when trackers are not used!)
-  ,{1, 2, 3} // non-skills/programming: 5, 6, 7; driver skills: 1, 2, 3
+  ,{5, 6, 7} // non-skills/programming: 5, 6, 7; driver skills: 1, 2, 3
 
   // IMU Port
-  ,16
+  ,8
 
   // Wheel Diameter (Remember, 4" wheels are actually 4.125!)
   //    (or tracking wheel diameter)
@@ -52,6 +52,7 @@ Drive chassis (
 
 void initialize() {
   flaps.set_value(0);
+  climber.set_value(0);
   init();
 
   // Print our branding over your terminal :D
@@ -71,7 +72,7 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.add_autons({
-    Auton("Auto", driverSkills)
+    Auton("Auto", AWP)
   });
 
   // Initialize chassis and auton selector
@@ -85,6 +86,7 @@ void disabled() {
 
 void competition_initialize() {
   flaps.set_value(0);
+  climber.set_value(0);
   // . . .
 }
 
@@ -109,12 +111,12 @@ void autonomous() {
 void opcontrol() {
   bool flapState = false;
   bool clawState = false;
+  bool climberState = false;
+
+  int lastClimberChange = 0;
   int lastFlapChange = 0;
   int lastCatapultShot = 0;
   int lastClawChange = 0;
-
-  pre_autonomous();
-  ez::as::auton_selector.call_selected_auton(); // Calls driver skills code
 
   chassis.set_drive_brake(MOTOR_BRAKE_BRAKE);
   pros::Task positionTracking(odometry::positionTrack, nullptr, TASK_PRIORITY_DEFAULT, TASK_STACK_DEPTH_DEFAULT, "Position Tracking Task"); // Start position tracking task
@@ -138,6 +140,11 @@ void opcontrol() {
         catapult.move_velocity(0); // Stop
     }
     
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_Y) && elapsed - lastClimberChange > climberCooldown) {
+      lastClimberChange = elapsed; // Set last climber change to current time
+      climberState = !climberState; // Toggle climber state
+      climber.set_value(climberState); // Set climber to state
+    }
 
     if (master.get_digital(pros::E_CONTROLLER_DIGITAL_B) && elapsed - lastFlapChange > flapCooldown) {
       lastFlapChange = elapsed; // Set last flap change to current time

@@ -72,6 +72,9 @@ namespace odometry {
     }
 
     void updateDisplay() {
+        printf("X Tracking: %f\n", curXTrack);
+        printf("Y Tracking: %f\n", curYTrack);
+        printf("Angle: %f\n", robot.angle);
         pros::lcd::print(0, "X: %f", odometry::robot.x);
         pros::lcd::print(1, "Y: %f", odometry::robot.y);
         pros::lcd::print(2, "Angle: %f", odometry::robot.angle);

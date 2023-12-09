@@ -13,9 +13,10 @@ namespace global {
     pros::Motor claw(11, pros::E_MOTOR_GEARSET_36, false, pros::E_MOTOR_ENCODER_DEGREES);
 
     pros::ADIDigitalOut flaps(3, 0);
+    pros::ADIDigitalOut climber(5, 0);
 
-    pros::Rotation horizontalEncoder(6);
-    pros::Rotation verticalEncoder(8);
+    pros::Rotation horizontalEncoder(17);
+    pros::Rotation verticalEncoder(9);
 
     void init() {
         elapsed = 0;
@@ -25,5 +26,10 @@ namespace global {
 
         catapult.tare_position();
         claw.tare_position();
+
+        horizontalEncoder.reset();
+        verticalEncoder.reset();
+        horizontalEncoder.reset_position();
+        verticalEncoder.reset_position();
     }
 }

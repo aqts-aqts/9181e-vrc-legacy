@@ -1,10 +1,10 @@
 #pragma once
 #include "main.h"
 
-#define centerToXTracking 0 // distance from tracking center to tracking wheel
-#define centerToYTracking 0 // distance from tracking center to middle of left wheels
+#define centerToXTracking 2 // distance from tracking center to x tracking wheel
+#define centerToYTracking 0 // distance from tracking center to y tracking wheel
 #define wheelDiameter 3.25 // diameter of the side wheels
-#define trackingDiameter 2.75 // diameter of tracking wheel
+#define trackingDiameter 1.5 // diameter of tracking wheel
 
 namespace odometry {
     struct Robot {
