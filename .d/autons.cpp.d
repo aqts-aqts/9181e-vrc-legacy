@@ -1,9 +1,8 @@
-bin/autons.cpp.o: src/autons.cpp include/autons.hpp \
- include/EZ-Template/drive/drive.hpp include/EZ-Template/PID.hpp \
- include/EZ-Template/util.hpp include/api.h include/pros/adi.h \
- include/pros/colors.h include/pros/distance.h include/pros/ext_adi.h \
- include/pros/adi.h include/pros/adi.h include/pros/gps.h \
- include/pros/imu.h include/pros/llemu.h include/display/lvgl.h \
+bin/autons.cpp.o: src/autons.cpp include/main.h include/api.h \
+ include/pros/adi.h include/pros/colors.h include/pros/distance.h \
+ include/pros/error.h include/pros/ext_adi.h include/pros/adi.h \
+ include/pros/adi.h include/pros/gps.h include/pros/imu.h \
+ include/pros/link.h include/pros/llemu.h include/display/lvgl.h \
  include/display/lv_version.h include/display/lv_misc/lv_log.h \
  include/display/lv_conf.h include/display/lv_conf_checker.h \
  include/display/lv_misc/lv_task.h include/display/lv_misc/lv_mem.h \
@@ -66,34 +65,36 @@ bin/autons.cpp.o: src/autons.cpp include/autons.hpp \
  include/display/lv_objx/lv_arc.h include/display/lv_objx/lv_calendar.h \
  include/display/lv_objx/lv_spinbox.h include/display/lv_objx/lv_ta.h \
  include/pros/misc.h include/pros/motors.h include/pros/optical.h \
- include/pros/rtos.h include/pros/rotation.h include/pros/screen.h \
- include/pros/colors.h include/pros/vision.h include/pros/adi.hpp \
- include/pros/distance.hpp include/pros/distance.h include/pros/gps.hpp \
- include/pros/gps.h include/pros/imu.hpp include/pros/imu.h \
- include/pros/llemu.hpp include/pros/llemu.h include/pros/misc.hpp \
- include/pros/misc.h include/pros/motors.hpp include/pros/motors.h \
+ include/pros/error.h include/pros/rtos.h include/pros/rotation.h \
+ include/pros/screen.h include/pros/colors.h include/pros/vision.h \
+ include/pros/adi.hpp include/pros/distance.hpp include/pros/distance.h \
+ include/pros/gps.hpp include/pros/gps.h include/pros/imu.hpp \
+ include/pros/imu.h include/pros/llemu.hpp include/pros/llemu.h \
+ include/pros/misc.hpp include/pros/misc.h include/pros/motors.hpp \
+ include/pros/motors.h include/pros/rtos.hpp include/pros/rtos.h \
  include/pros/optical.hpp include/pros/optical.h \
  include/pros/rotation.hpp include/pros/rotation.h include/pros/rtos.hpp \
- include/pros/rtos.h include/pros/screen.hpp include/pros/screen.h \
- include/pros/vision.hpp include/pros/vision.h include/main.h \
- include/api.h include/EZ-Template/api.hpp include/EZ-Template/auton.hpp \
- include/EZ-Template/auton_selector.hpp include/EZ-Template/sdcard.hpp \
- include/../src/include/global.h include/../src/include/async.h \
- include/../src/include/device.h include/../src/include/odometry.h \
- include/../src/include/controller.h
-include/autons.hpp:
-include/EZ-Template/drive/drive.hpp:
-include/EZ-Template/PID.hpp:
-include/EZ-Template/util.hpp:
+ include/pros/screen.hpp include/pros/screen.h include/pros/vision.hpp \
+ include/pros/vision.h include/pros/link.hpp include/pros/link.h \
+ include/lemlib/api.hpp include/lemlib/util.hpp include/lemlib/pid.hpp \
+ include/lemlib/pose.hpp include/lemlib/chassis/trackingWheel.hpp \
+ include/pros/motors.hpp include/pros/adi.hpp include/pros/rotation.hpp \
+ include/lemlib/chassis/chassis.hpp include/pros/imu.hpp \
+ include/../src/include/global.h include/../src/include/autons.h \
+ include/../src/include/chassis.h include/../src/include/controller.h \
+ include/../src/include/device.h include/../src/include/drive.h
+include/main.h:
 include/api.h:
 include/pros/adi.h:
 include/pros/colors.h:
 include/pros/distance.h:
+include/pros/error.h:
 include/pros/ext_adi.h:
 include/pros/adi.h:
 include/pros/adi.h:
 include/pros/gps.h:
 include/pros/imu.h:
+include/pros/link.h:
 include/pros/llemu.h:
 include/display/lvgl.h:
 include/display/lv_version.h:
@@ -203,6 +204,7 @@ include/display/lv_objx/lv_ta.h:
 include/pros/misc.h:
 include/pros/motors.h:
 include/pros/optical.h:
+include/pros/error.h:
 include/pros/rtos.h:
 include/pros/rotation.h:
 include/pros/screen.h:
@@ -221,24 +223,32 @@ include/pros/misc.hpp:
 include/pros/misc.h:
 include/pros/motors.hpp:
 include/pros/motors.h:
+include/pros/rtos.hpp:
+include/pros/rtos.h:
 include/pros/optical.hpp:
 include/pros/optical.h:
 include/pros/rotation.hpp:
 include/pros/rotation.h:
 include/pros/rtos.hpp:
-include/pros/rtos.h:
 include/pros/screen.hpp:
 include/pros/screen.h:
 include/pros/vision.hpp:
 include/pros/vision.h:
-include/main.h:
-include/api.h:
-include/EZ-Template/api.hpp:
-include/EZ-Template/auton.hpp:
-include/EZ-Template/auton_selector.hpp:
-include/EZ-Template/sdcard.hpp:
+include/pros/link.hpp:
+include/pros/link.h:
+include/lemlib/api.hpp:
+include/lemlib/util.hpp:
+include/lemlib/pid.hpp:
+include/lemlib/pose.hpp:
+include/lemlib/chassis/trackingWheel.hpp:
+include/pros/motors.hpp:
+include/pros/adi.hpp:
+include/pros/rotation.hpp:
+include/lemlib/chassis/chassis.hpp:
+include/pros/imu.hpp:
 include/../src/include/global.h:
-include/../src/include/async.h:
-include/../src/include/device.h:
-include/../src/include/odometry.h:
+include/../src/include/autons.h:
+include/../src/include/chassis.h:
 include/../src/include/controller.h:
+include/../src/include/device.h:
+include/../src/include/drive.h:

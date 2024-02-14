@@ -1,15 +1,18 @@
 #pragma once
 #include "main.h"
 
-#define catapultReset -360
-#define clawStop 0
-#define clawReset 616
-#define clawHold 400
+#define CATAPULT_ROTATION 360
+#define LIFT_STOP 0
+#define LIFT_HOLD 90
+#define LIFT_BLOCK 400
+
+#define AUTO_TO_MANUAL_COOLDOWN 1200
+#define CATAPULT_COOLDOWN 800
+#define LIFT_COOLDOWN 500
+#define FLAP_COOLDOWN 500
 
 namespace global {
-    void activate_catapult(double velocity);
-    void deactivate_catapult();
-    void activate_claw(double velocity);
-    void deactivate_claw(double velocity);
-    void hold_claw(double velocity);
+    extern void rotate_catapult(double velocity);
+    extern void raise_lower_lift(bool lift_state, double velocity);
+    extern void raise_lower_blocker(bool blocker_state, double velocity);
 }

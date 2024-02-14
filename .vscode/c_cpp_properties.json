@@ -4,9 +4,6 @@
       "name": "PROS Project",
       "includePath": [
         "${workspaceFolder}/**",
-        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
-        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
-        "c:\\Users\\alvin\\Coding\\9181e-vrc\\include",
         "c:\\Users\\alvin\\Coding\\9181e-vrc\\include"
       ],
       "defines": [
@@ -15,8 +12,8 @@
         "_UNICODE"
       ],
       "compilerPath": "c:\\Users\\alvin\\AppData\\Roaming\\Code\\User\\globalStorage\\sigbots.pros\\install\\pros-toolchain-windows\\usr\\bin\\arm-none-eabi-g++",
-      "cStandard": "c17",
-      "cppStandard": "c++17",
+      "cStandard": "gnu11",
+      "cppStandard": "gnu++20",
       "intelliSenseMode": "gcc-arm",
       "compileCommands": "c:\\Users\\alvin\\Coding\\9181e-vrc\\compile_commands.json",
       "browse": {

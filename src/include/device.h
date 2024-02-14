@@ -1,35 +1,51 @@
 #pragma once
 #include "main.h"
 
-#define autoToManualCooldown 1200
-#define catapultCooldown 800
-#define flapCooldown 500
-#define clawCooldown 500
-#define climberCooldown 500
+#define CATAPULT_RPM 100
+#define INTAKE_RPM 200
+#define LIFT_RPM 200
 
-#define clawLowerSpeed 1
-#define clawRaiseSpeed 1
-#define clawManualSpeed 1
-
-#define clawDuration 1200
-
-#define reverseCatapult 1
-#define reverseClaw 1
-
-#define clawRPM 100
-#define catapultRPM 100
+#define REVERSE_CATAPULT -1
+#define REVERSE_INTAKE 1
+#define REVERSE_LIFT 1
 
 namespace global {
     extern int elapsed;
 
+    extern pros::Controller master;
+
+    extern pros::Motor left_front;
+    extern pros::Motor left_middle;
+    extern pros::Motor left_back;
+    extern pros::Motor right_front;
+    extern pros::Motor right_middle;
+    extern pros::Motor right_back;
+
+    extern pros::MotorGroup left_motors;
+    extern pros::MotorGroup right_motors;
+
+    extern pros::Imu imu;
+
+    extern pros::Rotation horizontal_encoder;
+    extern pros::Rotation vertical_encoder;
+
     extern pros::Motor catapult;
-    extern pros::Motor claw;
+    extern pros::Motor intake;
+    extern pros::Motor lift;
 
     extern pros::ADIDigitalOut flaps;
-    extern pros::ADIDigitalOut climber;
 
-    extern pros::Rotation horizontalEncoder;
-    extern pros::Rotation verticalEncoder;
+    extern lemlib::TrackingWheel horizontal;
+    extern lemlib::TrackingWheel vertical;
+
+    extern lemlib::Drivetrain_t drivetrain;
+
+    extern lemlib::ChassisController_t lateral_controller;
+    extern lemlib::ChassisController_t angular_controller;
+
+    extern lemlib::OdomSensors_t sensors;
+
+    extern lemlib::Chassis chassis;
 
     extern void init();
 }
