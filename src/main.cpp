@@ -1,5 +1,4 @@
 #include "main.h"
-#include "lemlib/api.hpp"
 using namespace global;
 
 /**
@@ -41,7 +40,9 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+	test();
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -65,8 +66,8 @@ void opcontrol() {
 	bool blocker_state = false;
 	
 	int last_flap_change = 0;
+	int last_lift_change = -100;
 	int last_catapult_shot = 0;
-	int last_lift_change = 0;
 
 	int intake_time = 0;
 	int intake_direction = 1;
@@ -74,12 +75,12 @@ void opcontrol() {
 	while (true) {
 		drive();
 
-		if (master.get_digital(DIGITAL_L1)) {
+		/*if (master.get_digital(DIGITAL_L1)) {
 			if (elapsed - last_catapult_shot > CATAPULT_COOLDOWN) {
 				rotate_catapult(CATAPULT_RPM);
 				last_catapult_shot = elapsed;
 			}
-		}
+		}*/
 
 		if (elapsed - last_catapult_shot > AUTO_TO_MANUAL_COOLDOWN) {
 			if (master.get_digital(DIGITAL_L2))
@@ -88,7 +89,7 @@ void opcontrol() {
 				catapult.move_velocity(0);
 		}
 
-		if (master.get_digital(DIGITAL_B)) {
+		if (master.get_digital(DIGITAL_L1)) {
 			if (elapsed - last_flap_change > FLAP_COOLDOWN) {
 				flap_state = !flap_state;
 				flaps.set_value(flap_state);
@@ -97,35 +98,29 @@ void opcontrol() {
 		}
 
 		if (master.get_digital(DIGITAL_R1)) {
-			if (elapsed - last_lift_change > LIFT_COOLDOWN) {
-				lift_state = !lift_state;
-				if (lift_state) {
-					intake_time = 2000;
-					intake_direction = 1;
-					if (lift.get_position() > LIFT_HOLD)
-						raise_lower_lift(lift_state, 80);
-					else
-						raise_lower_lift(lift_state, LIFT_RPM);
-				} else {
-					lift.move_relative(200, LIFT_RPM * REVERSE_LIFT);
-				}
-				
-				last_lift_change = elapsed;
-			}
+			intake_time = 10;
+			intake_direction = 1;
+			if (elapsed - last_lift_change > LIFT_COOLDOWN)
+				raise_lower_lift(true, LIFT_RPM);
+			last_lift_change = elapsed;
+		} else if (elapsed - last_lift_change == 10) {
+			lift.move_relative(200, -LIFT_RPM);
+			pros::Task([]() {
+            	pros::delay(500);
+            	raise_lower_lift(false, LIFT_RPM);
+       		});
 		}
 
 		if (master.get_digital(DIGITAL_X)) {
 			if (elapsed - last_lift_change > LIFT_COOLDOWN) {
 				blocker_state = !blocker_state;
-				lift_state = blocker_state;
 				raise_lower_blocker(blocker_state, LIFT_RPM);
 				last_lift_change = elapsed;
 			}
 		}
 
 		if (master.get_digital(DIGITAL_R2)) {
-			intake_time = 10;
-			intake_direction = 1;
+			lift.tare_position();
 		} else if (master.get_digital(DIGITAL_Y)) {
 			intake_time = 10;
 			intake_direction = -1;
@@ -141,6 +136,13 @@ void opcontrol() {
 		if (elapsed - last_lift_change > AUTO_TO_MANUAL_COOLDOWN) {
 			lift.move_velocity(apply_threshold(master.get_analog(ANALOG_RIGHT_Y)));
 		}
+
+		// master.print(0, 0, "X: %f", chassis.getPose().x);
+		// master.print(1, 0, "Y: %f", chassis.getPose().y);
+		// master.print(2, 0, "Theta: %f", chassis.getPose().theta);
+
+		double average_motor_temp = (left_motors.get_temperatures()[0] + left_motors.get_temperatures()[1] + left_motors.get_temperatures()[2] + right_motors.get_temperatures()[0] + right_motors.get_temperatures()[1] + right_motors.get_temperatures()[2]) / 6;
+		master.print(0, 0, "Motor Temp: %f", average_motor_temp);
 
 		pros::delay(10);
 		elapsed += 10;

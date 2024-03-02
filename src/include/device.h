@@ -28,6 +28,7 @@ namespace global {
 
     extern pros::Rotation horizontal_encoder;
     extern pros::Rotation vertical_encoder;
+    extern pros::Rotation lift_encoder;
 
     extern pros::Motor catapult;
     extern pros::Motor intake;

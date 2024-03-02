@@ -2,7 +2,7 @@
 #include "main.h"
 
 #define LEFT_CURVE_SCALE 0
-#define RIGHT_CURVE_SCALE 0
+#define RIGHT_CURVE_SCALE 5
 
 #define WHEEL_DIAMETER 3.25
 #define DRIVE_CARTRIDGE_RPM 600

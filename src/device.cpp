@@ -16,10 +16,10 @@ namespace global {
     pros::MotorGroup left_motors({left_front, left_middle, left_back});
     pros::MotorGroup right_motors({right_front, right_middle, right_back});
 
-    pros::Imu imu(8);
+    pros::Imu imu(14);
 
-    pros::Rotation horizontal_encoder(0);
-    pros::Rotation vertical_encoder(0);
+    pros::Rotation horizontal_encoder(8, true);
+    pros::Rotation vertical_encoder(11, true);
 
     pros::Motor catapult(12, pros::E_MOTOR_GEARSET_36, false, pros::E_MOTOR_ENCODER_DEGREES);
     pros::Motor intake(9, pros::E_MOTOR_GEARSET_18, false, pros::E_MOTOR_ENCODER_DEGREES);
@@ -27,13 +27,13 @@ namespace global {
 
     pros::ADIDigitalOut flaps(3, 0);
 
-    lemlib::TrackingWheel horizontal(&horizontal_encoder, 2.75, 2); // Tracking wheel diameter, offset from tracking center
-    lemlib::TrackingWheel vertical(&vertical_encoder, 2.75, 0);
+    lemlib::TrackingWheel horizontal(&horizontal_encoder, 2.75, -4); // Tracking wheel diameter, offset from tracking center
+    lemlib::TrackingWheel vertical(&vertical_encoder, 2.75, 0.5);
 
     lemlib::Drivetrain_t drivetrain {
         &left_motors, 
         &right_motors, 
-        10, // Track width
+        10, // Track width (Skills = 10)
         3.25, // Wheel diameter
         360 // RPM of wheels
     };
@@ -49,8 +49,8 @@ namespace global {
     };
 
     lemlib::ChassisController_t angular_controller {
-        4, // kP
-        40, // kD
+        4.4, // kP
+        35, // kD
         1, // smallError
         100, // smallErrorTimeout
         3, // largeError
@@ -71,6 +71,8 @@ namespace global {
     void init() {
         elapsed = 0;
 
+        master.clear();
+
         left_motors.set_brake_modes(pros::E_MOTOR_BRAKE_HOLD);
         right_motors.set_brake_modes(pros::E_MOTOR_BRAKE_HOLD);
 
@@ -82,7 +84,7 @@ namespace global {
 
         flaps.set_value(0);
 
-        // chassis.calibrate();
-        // chassis.setPose(0, 0, 0);
+        chassis.calibrate();
+        chassis.setPose(0, 0, 0);
     }
 }

@@ -1,4 +1,6 @@
 #pragma once
 #include "main.h"
 
-namespace global {}
+namespace global {
+    void test();
+}
